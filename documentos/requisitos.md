@@ -10,3 +10,24 @@
 | **RF06** | A interface exibe o status da partida: **Aguardando oponente**, **Sua vez**, **Vez do adversário**, **Vitória**, **Derrota**, **Empate**, **Oponente desconectado**. |
 | **RF07** | Se um jogador desconectar, o servidor notifica os demais participantes e encerra ou pausa a partida, liberando a sala. |
 | **RF08** | Ao final da partida, os jogadores podem pedir revanche sem sair da sala. O placar da sessão (vitórias de cada lado) é mantido em memória. |
+
+# Requisitos Não Funcionais
+
+| ID | Requisito |
+|---|---|
+| **RNF01** | A comunicação em tempo real deverá utilizar WebSocket ou tecnologia equivalente, como Socket.IO. Polling não poderá ser o mecanismo principal. |
+| **RNF02** | A demonstração deverá utilizar pelo menos dois dispositivos físicos diferentes. |
+| **RNF03** | Na rede local, a atualização da tela após uma jogada deverá ser percebida como imediata, com referência de aproximadamente 200 ms. |
+| **RNF04** | O servidor deverá registrar no console os eventos principais: conexão, entrada em sala, jogadas aceitas ou rejeitadas e desconexão. |
+| **RNF05** | O servidor não deverá encerrar por causa de mensagens malformadas enviadas por clientes. |
+| **RNF06** | O projeto deverá utilizar Git, conter commits dos integrantes e apresentar um README com instruções de execução. |
+| **RNF07** | A interface deverá ser utilizável em computadores e celulares, com layout responsivo básico. |
+
+# Regras do Jokenpô
+
+- **RJ01 — Escolhas:** cada jogador poderá escolher pedra, papel ou tesoura.
+- **RJ02 — Sigilo:** a escolha de um jogador não poderá ser enviada ao adversário antes que ambos tenham escolhido. O servidor deverá revelar as duas escolhas simultaneamente.
+- **RJ03 — Resultado:** pedra vence tesoura, tesoura vence papel e papel vence pedra. Escolhas iguais resultam em empate.
+- **RJ04 — Tempo:** cada rodada terá limite de 10 segundos, controlado pelo servidor. Quem não escolher dentro do prazo perderá a rodada.
+- **RJ05 — Melhor de cinco:** vencerá a partida quem alcançar três vitórias em rodadas primeiro. Empates não contam como vitória.
+- **RJ06 — Espectadores:** espectadores poderão acompanhar a partida, mas não realizar jogadas como participantes daquela partida.
