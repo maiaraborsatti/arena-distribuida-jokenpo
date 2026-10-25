@@ -39,6 +39,18 @@ io.on("connection", (socket) => {
     
             }
 
+          socket.on("clique", () => {
+
+    //Verifica se quem clicou é o Jogador 1
+    if (socket === jogador1) {
+        io.emit("login", "Jogador 1 clicou!");
+    }
+
+    //Verifica se quem clicou é o Jogador 2
+    else if (socket === jogador2) {
+        io.emit("login", "Jogador 2 clicou!");
+    }});
+
     
     socket.on("disconnect", () => {
         console.log("Um jogador saiu!");
