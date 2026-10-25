@@ -2,7 +2,7 @@
 
 **Arena Distribuída – Projeto Integrador de Sistemas Distribuídos (5º semestre)**
 
-Grupo: [nomes dos integrantes]
+Grupo: Álvaro Giovanni, Geovana Messias, Kelvin Adriel, Maiara Zuim, Walter Pereira e Willian Cauã.
 Repositório: https://github.com/maiaraborsatti/arena-distribuida-jokenpo
 
 ## 1. Visão geral
