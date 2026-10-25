@@ -30,3 +30,18 @@ socket.on("login", (mensagem) => {
 socket.on("logout", (mensagem) => {
     adicionarLog(mensagem);
 });
+
+document.getElementById("criarSala").addEventListener("click", () => {
+    socket.emit("criar_sala");
+});
+
+document.getElementById("entrarSala").addEventListener("click", () => {
+    const codigo = document.getElementById("codigoSala").value.trim().toUpperCase();
+    socket.emit("entrar_sala", { codigo });
+});
+
+socket.on("sala_entrada", ({ codigo, papel }) => {
+    tipoJogador.textContent = `Sala ${codigo} — você é: ${papel}`;
+});
+
+socket.on("erro", ({ mensagem }) => adicionarLog(mensagem));
