@@ -1,27 +1,57 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jokenpô</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+    <!-- Primeira tela, aonde o jogador cria a sala ou entra em uma com o ID que já foi criado -->
+    <section id="telaLogin" class="tela1">
 
-    <h1>Jokenpô</h1>
+        <h1>Jokenpô</h1>
 
-    <p id="tipoJogador">Conectando...</p>
+        <div class="criar-sala">
+            <label for="">Iniciar nova sala</label>
+            <button id="criarSala">Criar Sala</button>
+        </div>
 
-    <input id="codigoSala" placeholder="Código da sala">
-    <button id="criarSala">Criar sala</button>
-    <button id="entrarSala">Entrar</button>    
+        <div class="input-container">
+            <p>Por favor digite o id da sala</p>
+            <div class="formulario">
+                <input id="codigoSala" type="text" placeholder="Codigo da Sala">
+                <button id="entrarSala">Entrar na sala</button>
+            </div>
+        </div>
 
-    <button id="enviar">Clicar</button>
-     
-    <p>LOGS DA SALA</p>
-    <div id="log"></div>
+        <p id="tipoJogador">Conectando...</p>
+
+    </section>
+<!-- Segunda tela, ela fica invisível enquanto o jogador nao criar ou entrar numa sala, posteriormente faremos um script para alternar entre ela e a primeira tela -->
+    <section id="telaJogo" class="tela-hidden">
+        <h1>Jokenpô</h1>
+
+        <div class="jogadas">
+            <button>✊</button>
+            <button>✋</button>
+            <button>✌️</button>
+        </div>
+
+
+        <h2>AGUARDANDO JOGADOR</h2>
+    </section>
+
+    <!-- <button id="enviar">Clicar</button> -->
+
+    <!-- <p>LOGS DA SALA</p>
+    <div id="log"></div> -->
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 
 </body>
+
 </html>
