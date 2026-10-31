@@ -1,3 +1,14 @@
+
+//Constantes dos stados possíveis de uma partida
+const STATUS_PARTIDA = {
+    AGUARDANDO: "AGUARDANDO_OPONENTE",
+    CARREGANDO: "CARREGANDO_PARTIDA",
+    EM_ANDAMENTO: "EM_ANDAMENTO",
+    ENCERRADA: "ENCERRADA"
+};
+
+
+
 // Cada sala guarda seus próprios participantes e o estado da própria partida.
 
 const salas = new Map(); // codigo -> sala
@@ -20,10 +31,11 @@ function criarSala() {
     const codigo = gerarCodigo();
     const sala = {
         codigo,
-        status: "AGUARDANDO_OPONENTE",
+        status: STATUS_PARTIDA.AGUARDANDO,
         jogador1: null,
         jogador2: null,
         espectadores: [],
+        temporizador: null,
         rodada: 1,
         placarRodadas: { jogador1: 0, jogador2: 0 },
         placarSessao: { jogador1: 0, jogador2: 0 },
@@ -43,4 +55,4 @@ function liberarSala(codigo) {
     return salas.delete(codigo);
 }
 
-module.exports = { criarSala, consultarSala, liberarSala };
+module.exports = { criarSala, consultarSala, liberarSala, STATUS_PARTIDA };

@@ -5,7 +5,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 const PORT = 3000;
-const { criarSala, consultarSala } = require("./salas");
+const { criarSala, consultarSala, STATUS_PARTIDA } = require("./salas");
 
 app.use(express.static("public"));
 
@@ -20,6 +20,8 @@ io.on("connection", (socket) => {
             sala.jogador1 = socket;
             papel = "jogador1";
             console.log(`Jogador 1 conectado na sala ${sala.codigo}`);
+
+
         } else if (sala.jogador2 === null) {
             sala.jogador2 = socket;
             papel = "jogador2";
@@ -29,6 +31,33 @@ io.on("connection", (socket) => {
             papel = "espectador";
             console.log(`Espectador conectado na sala ${sala.codigo}`);
         }
+
+        if (sala.jogador1 !== null && sala.jogador2 !== null) 
+        {
+        sala.status = STATUS_PARTIDA.CARREGANDO;//Verifica se os dois jogadores estão na sala, prepara para a issue 10
+        console.log(`Sala ${sala.codigo}: ${sala.status}`);
+
+        io.to(sala.codigo).emit("status_partida", {
+        status: sala.status
+             });
+
+            sala.temporizador = setTimeout(() => {
+            sala.status = STATUS_PARTIDA.EM_ANDAMENTO;
+            console.log(`Sala ${sala.codigo}: ${sala.status}`);
+            sala.temporizador = null;
+
+            io.to(sala.codigo).emit("status_partida", {
+            status: sala.status
+            });
+
+            }, 5000);
+
+
+
+        }
+
+        
+
         socket.join(sala.codigo);
         socket.data.codigo = sala.codigo;
         socket.emit("sala_entrada", { codigo: sala.codigo, papel });
