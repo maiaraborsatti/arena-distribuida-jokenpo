@@ -6,17 +6,26 @@ console.log("Script carregado!");
 
 const tipoJogador = document.getElementById("tipoJogador");
 const log = document.getElementById("log");
+const botaoPedra = document.getElementById("pedra");
+const botaoPapel = document.getElementById("papel");
+const botaoTesoura = document.getElementById("tesoura");
 const loglobby = document.getElementById("loglobby");
-const enviar = document.getElementById("enviar");
 const lobby = document.getElementById("lobby");
 const sala = document.getElementById("sala");
 const statusPartida = document.getElementById("statusPartida");
 
 
-//Aqui é um teste usando o botão de enviar com um input na pagina web, apenas para validar as permissoes de jogadores e espectadores
-enviar.addEventListener("click", () => {
-    socket.emit("clique");
-    
+// Envia a jogada escolhida pelo jogador ao servidor por meio do Socket.IO.
+botaoPedra.addEventListener("click", () => {
+    socket.emit("jogada", "pedra");
+});
+
+botaoPapel.addEventListener("click", () => {
+    socket.emit("jogada", "papel");
+});
+
+botaoTesoura.addEventListener("click", () => {
+    socket.emit("jogada", "tesoura");
 });
 
 function adicionarLog(mensagem) {
@@ -30,6 +39,10 @@ function adicionarLoglobby(mensagem) {
 
 socket.on("tipoJogador", (tipo) => {
     tipoJogador.textContent = tipo;
+});
+
+socket.on("erro", (dados) => {
+    adicionarLog(dados.mensagem);
 });
 
 socket.on("login", (mensagem) => {

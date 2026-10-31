@@ -38,6 +38,10 @@ function criarSala() {
         temporizador: null,
         rodada: 1,
         placarRodadas: { jogador1: 0, jogador2: 0 },
+        jogadas: {
+            jogador1: null,
+            jogador2: null
+        },
         placarSessao: { jogador1: 0, jogador2: 0 },
         versao: 0
     };

@@ -6,6 +6,7 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const PORT = 3000;
 const { criarSala, consultarSala, STATUS_PARTIDA } = require("./salas");
+const { determinarResultado } = require("./jogo");
 
 app.use(express.static("public"));
 
@@ -99,6 +100,55 @@ io.on("connection", (socket) => {
         }
     });
 
+    socket.on("jogada", (jogada) => {
+        const sala = consultarSala(socket.data.codigo);
+        if (!sala) return;
+
+        if (sala.status !== STATUS_PARTIDA.EM_ANDAMENTO){
+            return socket.emit("erro",{
+                mensagem: "A partida ainda não está em andamento."
+            });
+        }
+
+        if (socket !== sala.jogador1 && socket !== sala.jogador2){
+            return socket.emit("erro", {
+                mensagem: "Espectadores não podem realizar jogadas."
+        });
+
+        }
+
+        const jogadasValidas = ["pedra", "papel", "tesoura"];
+
+        if (!jogadasValidas.includes(jogada)){
+            return socket.emit("erro",{
+                mensagem: "Jogada inválida."
+            })
+        }
+
+        let jogador;
+
+        if (socket === sala.jogador1) {
+            jogador = "jogador1";
+        } else if (socket === sala.jogador2) {
+            jogador = "jogador2";
+        }
+
+        sala.jogadas[jogador] = jogada;
+
+        console.log(`${jogador} escolheu: ${jogada}`);
+
+        if (
+            sala.jogadas.jogador1 !== null &&
+            sala.jogadas.jogador2 !== null
+        ) {
+            const resultado = determinarResultado(
+                sala.jogadas.jogador1,
+                sala.jogadas.jogador2
+            );
+
+            console.log(`Resultado da rodada: ${resultado}`);
+        }
+    });
 
     socket.on("disconnect", () => {
         console.log("Um jogador saiu!");
