@@ -10,6 +10,7 @@ const loglobby = document.getElementById("loglobby");
 const enviar = document.getElementById("enviar");
 const lobby = document.getElementById("lobby");
 const sala = document.getElementById("sala");
+const statusPartida = document.getElementById("statusPartida");
 
 
 //Aqui é um teste usando o botão de enviar com um input na pagina web, apenas para validar as permissoes de jogadores e espectadores
@@ -37,6 +38,10 @@ socket.on("login", (mensagem) => {
 
 socket.on("logout", (mensagem) => {
     adicionarLog(mensagem);
+});
+
+socket.on("status_partida", ({ status }) => {
+    statusPartida.textContent = status;
 });
 
 document.getElementById("criarSala").addEventListener("click", () => {

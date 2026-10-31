@@ -32,6 +32,9 @@ io.on("connection", (socket) => {
             console.log(`Espectador conectado na sala ${sala.codigo}`);
         }
 
+        socket.join(sala.codigo);
+        socket.data.codigo = sala.codigo;
+
         if (sala.jogador1 !== null && sala.jogador2 !== null) 
         {
         sala.status = STATUS_PARTIDA.CARREGANDO;//Verifica se os dois jogadores estão na sala, prepara para a issue 10
@@ -58,8 +61,7 @@ io.on("connection", (socket) => {
 
         
 
-        socket.join(sala.codigo);
-        socket.data.codigo = sala.codigo;
+        
         socket.emit("sala_entrada", { codigo: sala.codigo, papel });
         io.to(sala.codigo).emit("login", `Entrou na sala: ${papel}`);
     }
