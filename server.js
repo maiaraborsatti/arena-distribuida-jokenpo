@@ -133,6 +133,12 @@ io.on("connection", (socket) => {
             jogador = "jogador2";
         }
 
+        if (sala.jogadas[jogador] !== null) {
+            return socket.emit("erro", {
+        mensagem: "Você já realizou sua jogada nesta rodada."
+            });
+        }
+
         sala.jogadas[jogador] = jogada;
 
         console.log(`${jogador} escolheu: ${jogada}`);
