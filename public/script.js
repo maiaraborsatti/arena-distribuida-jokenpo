@@ -42,7 +42,11 @@ socket.on("tipoJogador", (tipo) => {
 });
 
 socket.on("erro", (dados) => {
-    adicionarLog(dados.mensagem);
+    if (sala.style.display === "flex") {
+        adicionarLog(dados.mensagem);
+    } else {
+        adicionarLoglobby(dados.mensagem);
+    }
 });
 
 socket.on("login", (mensagem) => {
@@ -68,8 +72,7 @@ document.getElementById("entrarSala").addEventListener("click", () => {
 
 socket.on("sala_entrada", ({ codigo, papel }) => {
     lobby.style.display = "none";
-    sala.style.display = "block";
+    sala.style.display = "flex";
     tipoJogador.textContent = `Sala ${codigo} — você é: ${papel}`;
 });
 
-socket.on("erro", ({ mensagem }) => adicionarLoglobby(mensagem));

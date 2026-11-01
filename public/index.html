@@ -1,40 +1,85 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jokenpô</title>
-    <style>
-    #sala {
-        display: none;
-    }
-</style>
+
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <div id="lobby">
-    <h1>Jokenpô</h1>
+    <!-- Primeira tela, aonde o jogador cria a sala ou entra em uma com o ID que já foi criado -->
+    <section id="lobby" class="tela1">
 
-    
-    <input id="codigoSala" placeholder="Código da sala">
-    <button id="criarSala">Criar sala</button>
-    <button id="entrarSala">Entrar</button> 
-    <div id="loglobby"></div> 
-    </div>  
+        <h1>Jokenpô</h1>
 
-    
-     <div id="sala">
-    <p>LOGS DA SALA</p>
-    <p id="tipoJogador">Conectando...</p>
-    <p id="statusPartida">Aguardando outro jogador...</p>
-    <button id="pedra">Pedra</button>
-    <button id="papel">Papel</button>
-    <button id="tesoura">Tesoura</button>
-    <div id="log"></div>
-    </div>
+        <div class="criar-sala">
+            <label>Iniciar nova sala</label>
+            <button id="criarSala">Criar Sala</button>
+        </div>
 
+        <div class="input-container">
+
+            <p>Por favor, digite o ID da sala</p>
+
+            <div class="formulario">
+                <input
+                    id="codigoSala"
+                    type="text"
+                    placeholder="Código da Sala"
+                >
+
+                <button id="entrarSala">Entrar na sala</button>
+            </div>
+
+        </div>
+
+        <!-- Log de mensagens do lobby -->
+        <div id="loglobby"></div>
+
+    </section>
+
+
+    <!-- Tela da partida, com o script já atualizado-->
+    <section id="sala" class="tela-hidden">
+
+        <h1>Jokenpô</h1>
+
+        <!-- Identificação do jogador -->
+        <p id="tipoJogador">Conectando...</p>
+
+        <!-- Status atual da partida -->
+        <p id="statusPartida">Aguardando outro jogador...</p>
+
+        <!-- Botões de escolha -->
+        <div class="jogadas">
+
+            <button id="pedra">✊</button>
+
+            <button id="papel">✋</button>
+
+            <button id="tesoura">✌️</button>
+
+        </div>
+
+        <!-- Log de mensagens da partida -->
+        <p>LOGS DA SALA</p>
+
+        <div id="log"></div>
+
+    </section>
+
+
+    <!-- Conexão com Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
+
+    <!-- JavaScript do projeto -->
     <script src="script.js"></script>
 
 </body>
+
 </html>
