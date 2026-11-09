@@ -1,6 +1,8 @@
 body {
     margin: 0;
+    /* RESPONSIVO: dvh acompanha a barra de endereço do celular (100vh cortava a tela) */
     min-height: 100vh;
+    min-height: 100dvh;
 
     background-image: url('./sources/jokenpo.png');
     background-size: cover;
@@ -8,33 +10,45 @@ body {
     background-repeat: no-repeat;
 }
 
+/* RESPONSIVO: clamp(mínimo, ideal, máximo) -> a fonte cresce com a largura
+   da tela, mas nunca passa dos limites. Antes era 3.5rem fixo. */
 p {
     font-family: 'Times New Roman', Times, serif;
-    font-size: 3.5rem;
+    font-size: clamp(1.4rem, 5vw, 3.5rem);
     color: azure;
     margin-bottom: 0;
+    text-align: center;
 }
 
 label {
-    font-size: 3.5rem;
+    font-size: clamp(1.6rem, 5vw, 3.5rem);
     color: azure;
+    text-align: center;
 }
 
 h1 {
-    font-size: 3.5rem;
+    font-size: clamp(2rem, 7vw, 3.5rem);
     color: azure;
+    margin: 0.4em 0;
 }
 
 h2 {
-    font-size: 1.5rem;
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
     color: azure;
+}
+
+/* Classe utilitária para esconder; o JS só adiciona/remove "hidden" */
+.hidden {
+    display: none !important;
 }
 
 .tela1 {
     display: flex;
     align-items: center;
     flex-direction: column;
-    margin-top: 10%;
+    margin-top: 5vh;           /* antes: 10% */
+    padding: 0 16px;           /* RESPONSIVO: não encosta nas bordas da tela */
+    box-sizing: border-box;
 }
 
 .tela1 button {
@@ -44,6 +58,7 @@ h2 {
     background-color: beige;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.2s;
+    touch-action: manipulation; /* evita zoom por toque duplo nos botões */
 }
 
 .tela1 button:hover {
@@ -52,12 +67,14 @@ h2 {
 
 .criar-sala {
     display: flex;
+    flex-wrap: wrap;           /* RESPONSIVO: label e botão quebram de linha se faltar espaço */
+    justify-content: center;
     align-items: center;
     gap: 10px;
 }
 
 .criar-sala button {
-    padding: 1.3vh;
+    padding: 1.3vh 2vh;
     border: none;
     outline: none;
     border-radius: 10px;
@@ -66,13 +83,15 @@ h2 {
 .formulario {
     display: flex;
     gap: 0;
+    width: min(90vw, 800px);   /* RESPONSIVO: ocupa até 90% da tela, máx. 420px */
 }
 
 .formulario input {
-    box-sizing: border-box; 
+    box-sizing: border-box;
+    /* min-width: 0;              deixa o input encolher dentro do flex */
     padding: 1.5vh;
     border: none;
-    font-size: 18px;
+    font-size: 18px;           /* 16px+ evita o zoom automático do iOS ao focar */
     outline: none;
     flex: 1;
     border-bottom-left-radius: 10px;
@@ -84,34 +103,111 @@ h2 {
 .formulario button {
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
-    padding: 1.2vh;
+    padding: 1.2vh 1.6vh;
     outline: none;
     border: none;
 }
 
-.tela-hidden {
-    display: none;
-    align-items: center;
-    flex-direction: column;
-    margin-top: 10%;
+/* Mensagem do lobby (só a última) */
+#loglobby {
+    min-height: 2rem;
+    margin-top: 1rem;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: clamp(1.1rem, 4vw, 1.5rem);
+    color: #ffb3b3;
+    text-align: center;
 }
 
-.tela-hidden button {
-    font-size: 5.0rem;
+/* Tela da partida (quem esconde é a classe ".hidden") */
+.tela2 {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 3vh;
+    padding: 0 12px 24px;
+    box-sizing: border-box;
+}
+
+/* Botões grandes de jogada */
+.jogadas {
+    display: flex;
+    justify-content: center;
+    gap: clamp(10px, 3vw, 30px);   /* antes: 30px fixo */
+    margin-top: 1rem;
+}
+
+.jogadas button {
+    /* RESPONSIVO: emoji e espaçamento escalam com a largura; em 360px os 3 cabem na linha */
+    font-size: clamp(2.5rem, 13vw, 5rem);
+    padding: clamp(10px, 3vh, 5vh) clamp(12px, 3.5vw, 40px);
     font-family: 'Times New Roman', Times, serif;
     border-color: bisque;
     background-color: beige;
     cursor: pointer;
     border-radius: 10px;
     transition: background-color 0.2s, transform 0.2s;
-    padding: 5vh;
+    touch-action: manipulation;
 }
 
-.jogadas{
-    display: flex;
-    gap: 30px;
+.jogadas button:hover:not(:disabled) {
+    background-color: rgb(241, 215, 181);
 }
 
-.hidden {
-    display: none;
-} 
+/* Botão bloqueado (fora da vez / sem partida / espectador) */
+.jogadas button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Destaca a jogada que EU escolhi nesta rodada */
+.jogadas button.selecionado {
+    outline: 5px solid gold;
+    background-color: rgb(241, 215, 181);
+}
+
+/* Placar e resultado */
+.info {
+    font-size: clamp(1.1rem, 4vw, 2rem);
+    margin: 0.5rem 0;
+    min-height: 2.4rem;
+    white-space: pre-line;
+    text-align: center;
+}
+
+/* Botão de revanche */
+#revanche {
+    margin-top: 1rem;
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
+    font-family: 'Times New Roman', Times, serif;
+    padding: 1.2vh 2vw;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    background-color: gold;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* Log com altura fixa e rolagem interna */
+#log {
+    width: min(92vw, 700px);
+    height: clamp(120px, 22vh, 200px);   /* RESPONSIVO: menor em telas baixas */
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 6px 10px;
+    box-sizing: border-box;
+}
+
+#log p {
+    font-size: clamp(0.95rem, 3.2vw, 1.1rem);
+    margin: 4px 0;
+    text-align: left;
+}
+
+/* RESPONSIVO: telas pequenas (celular em pé) */
+@media (max-width: 480px) {
+    .criar-sala {
+        flex-direction: column;
+    }
+}
