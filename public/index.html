@@ -1,27 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jokenpô</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <h1>Jokenpô</h1>
+    <!-- Primeira tela: criar sala ou entrar com um código -->
+    <section id="lobby" class="tela1">
 
-    <p id="tipoJogador">Conectando...</p>
+        <h1>Jokenpô</h1>
 
-    <input id="codigoSala" placeholder="Código da sala">
-    <button id="criarSala">Criar sala</button>
-    <button id="entrarSala">Entrar</button>    
+        <div class="criar-sala">
+            <label>Iniciar nova sala</label>
+            <button id="criarSala">Criar Sala</button>
+        </div>
 
-    <button id="enviar">Clicar</button>
-     
-    <p>LOGS DA SALA</p>
-    <div id="log"></div>
+        <div class="input-container">
 
+            <p>Por favor, digite o ID da sala</p>
+
+            <div class="formulario">
+                <input
+                    id="codigoSala"
+                    type="text"
+                    placeholder="Código da Sala"
+                >
+
+                <button id="entrarSala">Entrar na sala</button>
+            </div>
+
+        </div>
+
+        <!-- log da sala -->
+        <div id="loglobby"></div>
+
+    </section>
+
+
+    <!-- Mostrar/esconder é só trocar a classe "hidden". -->
+    <section id="sala" class="tela2 hidden">
+
+        <h1>Jokenpô</h1>
+
+        <!-- Identificação do jogador -->
+        <p id="tipoJogador">Conectando...</p>
+
+        <!-- Status atual da partida -->
+        <p id="statusPartida">Aguardando outro jogador...</p>
+
+        <!-- NOVO: placar e rodada (atualizados pelo evento "placar") -->
+        <p id="placar" class="info"></p>
+
+        <!-- Resultado é substituído em cada rodada -->
+        <p id="resultado" class="info"></p>
+
+        <!-- Botões de escolha (começam desabilitados; o script libera na hora certa) -->
+        <div class="jogadas">
+            <button id="pedra" disabled>✊</button>
+            <button id="papel" disabled>✋</button>
+            <button id="tesoura" disabled>✌️</button>
+        </div>
+
+        <!-- Aparece só quando a partida termina -->
+        <button id="revanche" class="hidden">Jogar novamente</button>
+
+        <!-- Log de mensagens da sala (agora com altura fixa e rolagem) -->
+        <h2>LOGS DA SALA</h2>
+        <div id="log"></div>
+
+    </section>
+
+
+    <!-- Conexão com Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
+
+    <!-- JavaScript do projeto -->
     <script src="script.js"></script>
 
 </body>
+
 </html>
