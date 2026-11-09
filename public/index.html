@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -12,7 +11,7 @@
 
 <body>
 
-    <!-- Primeira tela, aonde o jogador cria a sala ou entra em uma com o ID que já foi criado -->
+    <!-- Primeira tela: criar sala ou entrar com um código -->
     <section id="lobby" class="tela1">
 
         <h1>Jokenpô</h1>
@@ -38,14 +37,14 @@
 
         </div>
 
-        <!-- Log de mensagens do lobby -->
+        <!-- log da sala -->
         <div id="loglobby"></div>
 
     </section>
 
 
-    <!-- Tela da partida, com o script já atualizado-->
-    <section id="sala" class="tela-hidden">
+    <!-- Mostrar/esconder é só trocar a classe "hidden". -->
+    <section id="sala" class="tela2 hidden">
 
         <h1>Jokenpô</h1>
 
@@ -55,20 +54,24 @@
         <!-- Status atual da partida -->
         <p id="statusPartida">Aguardando outro jogador...</p>
 
-        <!-- Botões de escolha -->
+        <!-- NOVO: placar e rodada (atualizados pelo evento "placar") -->
+        <p id="placar" class="info"></p>
+
+        <!-- Resultado é substituído em cada rodada -->
+        <p id="resultado" class="info"></p>
+
+        <!-- Botões de escolha (começam desabilitados; o script libera na hora certa) -->
         <div class="jogadas">
-
-            <button id="pedra">✊</button>
-
-            <button id="papel">✋</button>
-
-            <button id="tesoura">✌️</button>
-
+            <button id="pedra" disabled>✊</button>
+            <button id="papel" disabled>✋</button>
+            <button id="tesoura" disabled>✌️</button>
         </div>
 
-        <!-- Log de mensagens da partida -->
-        <p>LOGS DA SALA</p>
+        <!-- Aparece só quando a partida termina -->
+        <button id="revanche" class="hidden">Jogar novamente</button>
 
+        <!-- Log de mensagens da sala (agora com altura fixa e rolagem) -->
+        <h2>LOGS DA SALA</h2>
         <div id="log"></div>
 
     </section>
