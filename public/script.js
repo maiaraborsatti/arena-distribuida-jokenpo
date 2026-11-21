@@ -1,11 +1,10 @@
-// Cria uma conexão com o servidor Socket.IO
+// CONEXÃO
 const socket = io();
 
-// variáveis relacionadas as 2 telas do game
+// ELEMENTOS DO DOM
 const telaLobby = document.getElementById("lobby");
 const telaSala = document.getElementById("sala");
 
-// variáveis relacionadas as ações dos jogadores (Input, textos que se alternam, etc)
 const tipoJogador = document.getElementById("tipoJogador");
 const statusPartida = document.getElementById("statusPartida");
 const placarEl = document.getElementById("placar");
@@ -14,43 +13,17 @@ const log = document.getElementById("log");
 const loglobby = document.getElementById("loglobby");
 const botaoRevanche = document.getElementById("revanche");
 
-// Mapa com os botões das jogadas
 const botoesJogada = {
     pedra: document.getElementById("pedra"),
     papel: document.getElementById("papel"),
     tesoura: document.getElementById("tesoura")
 };
 
-let meuPapel = null;                  
-let statusAtual = "AGUARDANDO_OPONENTE";
-let jaJoguei = false;                
-
+// CONSTANTES
 const NOMES = { jogador1: "Jogador 1", jogador2: "Jogador 2" };
 const EMOJIS = { pedra: "✊", papel: "✋", tesoura: "✌️" };
 const MAX_LINHAS_LOG = 50;
 
-function souJogador() {
-    return meuPapel === "jogador1" || meuPapel === "jogador2";
-}
-
-// Adiciona logs e empilha com o scroll
-function adicionarLog(mensagem) {
-    const linha = document.createElement("p");
-    linha.textContent = mensagem;
-    log.appendChild(linha);
-
-    while (log.children.length > MAX_LINHAS_LOG) {
-        log.removeChild(log.firstChild);
-    }
-    log.scrollTop = log.scrollHeight;
-}
-
-// Mostra somente a mensagem principal da ação
-function mostrarMensagemLobby(mensagem) {
-    loglobby.textContent = mensagem;
-}
-
-// Mapa com os Estados da sala de jogo
 const TEXTOS_STATUS = {
     AGUARDANDO_OPONENTE: "Aguardando outro jogador...",
     CARREGANDO_PARTIDA: "Partida começando...",
@@ -58,46 +31,188 @@ const TEXTOS_STATUS = {
     ENCERRADA: "Partida encerrada"
 };
 
-function mostrarStatus() {
-    let texto = TEXTOS_STATUS[statusAtual] || statusAtual;
-    if (statusAtual === "EM_ANDAMENTO" && souJogador()) {
-        texto = jaJoguei ? "Aguardando o adversário jogar..." : "Faça sua jogada!";
+// ESTADO
+// Única fonte de verdade da interface. Guarda dados crus
+// (não textos prontos): o texto é montado na renderização.
+const estado = {
+    emSala: false,
+    codigo: null,
+    papel: null,                         // "jogador1" | "jogador2" | "espectador"
+    status: "AGUARDANDO_OPONENTE",
+    rodada: 1,
+    placar: { jogador1: 0, jogador2: 0 },
+    jaJoguei: false,
+    jogadaEscolhida: null,               // "pedra" | "papel" | "tesoura" | null
+    ultimaRodada: null,                  // { rodada, jogadas, resultado, placar }
+    vencedor: null,                      // "jogador1" | "jogador2" | null
+    logs: [],
+    erroLobby: ""
+};
+
+function souJogador() {
+    return estado.papel === "jogador1" || estado.papel === "jogador2";
+}
+
+function registrarLog(mensagem) {
+    estado.logs.push(mensagem);
+    while (estado.logs.length > MAX_LINHAS_LOG) {
+        estado.logs.shift();
     }
-    statusPartida.textContent = texto;
 }
 
-function mostrarPlacar(rodada, placar) {
-    placarEl.textContent =
-        `Rodada ${rodada} — Jogador 1: ${placar.jogador1} | Jogador 2: ${placar.jogador2}`;
+// TEXTOS (funções puras: leem dados e devolvem string)
+function textoStatus() {
+    if (estado.status === "EM_ANDAMENTO" && souJogador()) {
+        return estado.jaJoguei ? "Aguardando o adversário jogar..." : "Faça sua jogada!";
+    }
+    return TEXTOS_STATUS[estado.status] || estado.status;
 }
 
-// Desativa a jogada se houver somente um jogador e se a jogada já foi feita
-function atualizarBotoes() {
-    const podeJogar = souJogador() && statusAtual === "EM_ANDAMENTO" && !jaJoguei;
-    Object.values(botoesJogada).forEach((botao) => {
-        botao.disabled = !podeJogar;
-    });
-    botaoRevanche.classList.toggle("hidden", !(souJogador() && statusAtual === "ENCERRADA"));
-    mostrarStatus();
-}
-
-function limparMarcacaoBotoes() {
-    Object.values(botoesJogada).forEach((b) => b.classList.remove("selecionado"));
-}
-
-function textoResultadoRodada({ jogadas, resultado }) {
+function textoRodada({ jogadas, resultado }) {
     const confronto = `${EMOJIS[jogadas.jogador1]} x ${EMOJIS[jogadas.jogador2]}`;
 
     if (resultado === "empate") return `${confronto} — Empate! Jogue de novo.`;
     if (souJogador()) {
-        return resultado === meuPapel
+        return resultado === estado.papel
             ? `${confronto} — Você venceu a rodada!`
             : `${confronto} — Você perdeu a rodada.`;
     }
     return `${confronto} — ${NOMES[resultado]} venceu a rodada.`; // espectador
 }
 
-// Emite a jogada com o nome do botão e o tipo de jogada ao servidor
+function textoFimPartida() {
+    if (souJogador()) {
+        return estado.vencedor === estado.papel
+            ? "🏆 Você venceu a partida!"
+            : "Você perdeu a partida.";
+    }
+    return `${NOMES[estado.vencedor]} venceu a partida!`;
+}
+
+function textoResultado() {
+    const partes = [];
+    if (estado.ultimaRodada) partes.push(textoRodada(estado.ultimaRodada));
+    if (estado.vencedor) partes.push(textoFimPartida());
+    return partes.join("\n");
+}
+
+// RENDERIZAÇÃO
+// Só lê o estado e atualiza o DOM. Não altera estado e não emite eventos.
+function renderizar() {
+    // Telas
+    telaLobby.classList.toggle("hidden", estado.emSala);
+    telaSala.classList.toggle("hidden", !estado.emSala);
+    loglobby.textContent = estado.erroLobby;
+
+    if (!estado.emSala) return;
+
+    // Cabeçalho da sala
+    tipoJogador.textContent = `Sala ${estado.codigo} — você é: ${estado.papel}`;
+    statusPartida.textContent = textoStatus();
+    placarEl.textContent =
+        `Rodada ${estado.rodada} — Jogador 1: ${estado.placar.jogador1} | Jogador 2: ${estado.placar.jogador2}`;
+    resultadoEl.textContent = textoResultado();
+
+    // Botões de jogada
+    const podeJogar = souJogador() && estado.status === "EM_ANDAMENTO" && !estado.jaJoguei;
+    Object.entries(botoesJogada).forEach(([nome, botao]) => {
+        botao.disabled = !podeJogar;
+        botao.classList.toggle("selecionado", estado.jogadaEscolhida === nome);
+    });
+
+    // Revanche
+    botaoRevanche.classList.toggle("hidden", !(souJogador() && estado.status === "ENCERRADA"));
+
+    // Log
+    log.replaceChildren(...estado.logs.map((mensagem) => {
+        const linha = document.createElement("p");
+        linha.textContent = mensagem;
+        return linha;
+    }));
+    log.scrollTop = log.scrollHeight;
+}
+
+// HANDLERS DOS EVENTOS DO SOCKET.IO
+// Cada handler só altera o estado. A renderização roda depois.
+const handlers = {
+    sala_entrada({ codigo, papel, status, rodada, placar }) {
+        Object.assign(estado, {
+            emSala: true,
+            codigo,
+            papel,
+            status,
+            rodada,
+            placar,
+            jaJoguei: false,
+            jogadaEscolhida: null,
+            ultimaRodada: null,
+            vencedor: null,
+            erroLobby: ""
+        });
+    },
+
+    status_partida({ status }) {
+        const anterior = estado.status;
+        estado.status = status;
+
+        if (status === "AGUARDANDO_OPONENTE" || status === "CARREGANDO_PARTIDA" ||
+            (anterior === "ENCERRADA" && status !== "ENCERRADA")) {
+            estado.ultimaRodada = null;
+            estado.vencedor = null;
+            estado.jogadaEscolhida = null;
+        }
+
+        if (status !== "EM_ANDAMENTO") estado.jaJoguei = false;
+        if (anterior === "ENCERRADA" && status === "EM_ANDAMENTO") estado.jaJoguei = false;
+    },
+
+    placar({ rodada, placar }) {
+        estado.rodada = rodada;
+        estado.placar = placar;
+    },
+
+    jogada_registrada({ jogada }) {
+        estado.jaJoguei = true;
+        estado.jogadaEscolhida = jogada;
+    },
+
+    resultado_rodada(dados) {
+        estado.ultimaRodada = dados;
+        estado.jaJoguei = false;
+        estado.jogadaEscolhida = null;
+        registrarLog(`Rodada ${dados.rodada}: ${textoRodada(dados)}`);
+    },
+
+    fim_partida({ vencedor }) {
+        estado.vencedor = vencedor;
+        registrarLog(textoFimPartida());
+    },
+
+    login(mensagem) {
+        registrarLog(mensagem);
+    },
+
+    logout(mensagem) {
+        registrarLog(mensagem);
+    },
+
+    erro({ mensagem }) {
+        if (estado.emSala) registrarLog(mensagem);
+        else estado.erroLobby = mensagem;
+    }
+};
+
+// Ponto único de entrada dos eventos do servidor:
+// atualiza o estado e, em seguida, redesenha a tela.
+Object.entries(handlers).forEach(([evento, handler]) => {
+    socket.on(evento, (dados) => {
+        handler(dados);
+        renderizar();
+    });
+});
+
+// AÇÕES DO USUÁRIO
+// Só emitem eventos. Quem muda o estado é a resposta do servidor.
 Object.entries(botoesJogada).forEach(([jogada, botao]) => {
     botao.addEventListener("click", () => {
         socket.emit("jogada", jogada);
@@ -109,85 +224,17 @@ botaoRevanche.addEventListener("click", () => {
 });
 
 document.getElementById("criarSala").addEventListener("click", () => {
+    estado.erroLobby = "";
+    renderizar();
     socket.emit("criar_sala");
 });
 
 document.getElementById("entrarSala").addEventListener("click", () => {
     const codigo = document.getElementById("codigoSala").value.trim().toUpperCase();
+    estado.erroLobby = "";
+    renderizar();
     socket.emit("entrar_sala", { codigo });
 });
 
-// Resposta do servidor quando o jogador entra na partida, mudando o estado das telas
-socket.on("sala_entrada", ({ codigo, papel, status, rodada, placar }) => {
-    meuPapel = papel;
-    statusAtual = status;
-    jaJoguei = false;
-
-    telaLobby.classList.add("hidden");
-    telaSala.classList.remove("hidden");
-
-    tipoJogador.textContent = `Sala ${codigo} — você é: ${papel}`;
-    mostrarPlacar(rodada, placar);
-    atualizarBotoes();
-});
-
-// Resposta do servidor aos status da tela da partida
-socket.on("status_partida", ({ status }) => {
-    const anterior = statusAtual;
-    statusAtual = status;
-
-    if (status === "AGUARDANDO_OPONENTE" || status === "CARREGANDO_PARTIDA" ||
-        (anterior === "ENCERRADA" && status !== "ENCERRADA")) {
-        resultadoEl.textContent = "";
-        limparMarcacaoBotoes();
-    }
-
-    if (status !== "EM_ANDAMENTO") jaJoguei = false;
-    if (anterior === "ENCERRADA" && status === "EM_ANDAMENTO") jaJoguei = false;
-
-    atualizarBotoes();
-});
-
-// Resposta do servidor ao placar da partida
-socket.on("placar", ({ rodada, placar }) => {
-    mostrarPlacar(rodada, placar);
-});
-
-// resposta do servidor para jogada que foi efetuada
-socket.on("jogada_registrada", ({ jogada }) => {
-    jaJoguei = true;
-    limparMarcacaoBotoes();
-    botoesJogada[jogada].classList.add("selecionado");
-    atualizarBotoes();
-});
-
-socket.on("resultado_rodada", (dados) => {
-    resultadoEl.textContent = textoResultadoRodada(dados);
-    adicionarLog(`Rodada ${dados.rodada}: ${resultadoEl.textContent}`);
-    jaJoguei = false;
-    limparMarcacaoBotoes();
-    atualizarBotoes();
-});
-
-socket.on("fim_partida", ({ vencedor }) => {
-    let texto;
-    if (souJogador()) {
-        texto = vencedor === meuPapel ? "🏆 Você venceu a partida!" : "Você perdeu a partida.";
-    } else {
-        texto = `${NOMES[vencedor]} venceu a partida!`;
-    }
-    resultadoEl.textContent += `\n${texto}`;
-    adicionarLog(texto);
-});
-
-//Resposta do servidor à entrada e saída do jogador
-socket.on("login", (mensagem) => adicionarLog(mensagem));
-socket.on("logout", (mensagem) => adicionarLog(mensagem));
-
-socket.on("erro", (dados) => {
-    if (telaSala.classList.contains("hidden")) {
-        mostrarMensagemLobby(dados.mensagem);
-    } else {
-        adicionarLog(dados.mensagem);
-    }
-});
+// Desenho inicial
+renderizar();
