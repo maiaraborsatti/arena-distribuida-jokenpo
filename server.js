@@ -1,9 +1,11 @@
 const express = require("express");
 const http = require("http");
+const os = require('os');
 const { Server } = require("socket.io");
 const { criarSala, consultarSala, liberarSala, STATUS_PARTIDA } = require("./salas");
 const { determinarResultado } = require("./jogo");
 
+const ipv4 = Object.values(os.networkInterfaces()).flat().find(i => i.family === 'IPv4' && !i.internal)?.address
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
@@ -217,5 +219,5 @@ io.on("connection", (socket) => {
 
 server.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
-    console.log(`Acesse: http://localhost:${PORT}`);
+    console.log(`Acesse: http://${ipv4}:${PORT}`);
 });
