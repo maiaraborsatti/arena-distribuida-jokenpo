@@ -41,6 +41,7 @@ function emitirPlacar(sala) {
 
 function iniciarCronometroRodada(sala) {
     cancelarCronometroRodada(sala);
+    io.to(sala.codigo).emit("cronometro_iniciado", { duracao: TEMPO_RODADA_MS });
     sala.aceitandoJogadas = true;
     sala.temporizadorRodada = setTimeout(() => {
     sala.temporizadorRodada = null;
@@ -251,6 +252,7 @@ function iniciarCarregamento(sala) {
     sala.status = STATUS_PARTIDA.CARREGANDO;
     console.log(`Sala ${sala.codigo}: ${sala.status}`);
     emitirStatus(sala);
+    iniciarCronometroRodada(sala)
     emitirPlacar(sala);
 
     sala.temporizador = setTimeout(() => {
@@ -464,6 +466,7 @@ if (
         sala.status = STATUS_PARTIDA.EM_ANDAMENTO;
         emitirStatus(sala);
         emitirPlacar(sala);
+        iniciarCronometroRodada(sala)
         io.to(sala.codigo).emit("login", "Nova partida iniciada!");
     });
 

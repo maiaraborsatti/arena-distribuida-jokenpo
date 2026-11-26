@@ -184,7 +184,7 @@ const handlers = {
         const anterior = estado.status;
         estado.status = status;
 
-        if (status === "AGUARDANDO_OPONENTE" || status === "CARREGANDO_PARTIDA" ||
+        if (status === "AGUARDANDO_OPONENTE"  ||
             (anterior === "ENCERRADA" && status !== "ENCERRADA")) {
             estado.ultimaRodada = null;
             estado.vencedor = null;
