@@ -4,6 +4,7 @@ const socket = io();
 // ELEMENTOS DO DOM
 const telaLobby = document.getElementById("lobby");
 const telaSala = document.getElementById("sala");
+const cronometroEl = document.getElementById("cronometro");
 
 const tipoJogador = document.getElementById("tipoJogador");
 const statusPartida = document.getElementById("statusPartida");
@@ -46,7 +47,8 @@ const estado = {
     ultimaRodada: null,                  // { rodada, jogadas, resultado, placar }
     vencedor: null,                      // "jogador1" | "jogador2" | null
     logs: [],
-    erroLobby: ""
+    erroLobby: "",
+    fimCronometro: null
 };
 
 function souJogador() {
@@ -69,19 +71,19 @@ function textoStatus() {
 }
 
 function textoRodada({ jogadas, resultado }) {
-   // const confronto = `${EMOJIS[jogadas.jogador1]} x ${EMOJIS[jogadas.jogador2]}`;
-const jogada1 =
-    jogadas.jogador1
-        ? EMOJIS[jogadas.jogador1]
-        : "⏰";
+    // const confronto = `${EMOJIS[jogadas.jogador1]} x ${EMOJIS[jogadas.jogador2]}`;
+    const jogada1 =
+        jogadas.jogador1
+            ? EMOJIS[jogadas.jogador1]
+            : "⏰";
 
-const jogada2 =
-    jogadas.jogador2
-        ? EMOJIS[jogadas.jogador2]
-        : "⏰";
+    const jogada2 =
+        jogadas.jogador2
+            ? EMOJIS[jogadas.jogador2]
+            : "⏰";
 
-const confronto =
-    `${jogada1} x ${jogada2}`;
+    const confronto =
+        `${jogada1} x ${jogada2}`;
     if (resultado === "empate") return `${confronto} — Empate! Jogue de novo.`;
     if (souJogador()) {
         return resultado === estado.papel
@@ -109,6 +111,19 @@ function textoResultado() {
 
 // RENDERIZAÇÃO
 // Só lê o estado e atualiza o DOM. Não altera estado e não emite eventos.
+
+function atualizarCronometro() {
+    if (!estado.emSala || estado.fimCronometro === null) {
+        cronometroEl.textContent = "";
+        return;
+    }
+    // Date.now() = horário atual em milissegundos
+    const restante = Math.max(0, Math.ceil((estado.fimCronometro - Date.now()) / 1000));
+    cronometroEl.textContent = `⏱️ ${restante}s`;
+}
+
+setInterval(atualizarCronometro, 250); // roda 4 vezes por segundo
+
 function renderizar() {
     // Telas
     telaLobby.classList.toggle("hidden", estado.emSala);
@@ -123,6 +138,8 @@ function renderizar() {
     placarEl.textContent =
         `Rodada ${estado.rodada} — Jogador 1: ${estado.placar.jogador1} | Jogador 2: ${estado.placar.jogador2}`;
     resultadoEl.textContent = textoResultado();
+
+    atualizarCronometro();
 
     // Botões de jogada
     const podeJogar = souJogador() && estado.status === "EM_ANDAMENTO" && !estado.jaJoguei;
@@ -158,7 +175,8 @@ const handlers = {
             jogadaEscolhida: null,
             ultimaRodada: null,
             vencedor: null,
-            erroLobby: ""
+            erroLobby: "",
+            fimCronometro: null
         });
     },
 
@@ -166,7 +184,7 @@ const handlers = {
         const anterior = estado.status;
         estado.status = status;
 
-        if (status === "AGUARDANDO_OPONENTE" || status === "CARREGANDO_PARTIDA" ||
+        if (status === "AGUARDANDO_OPONENTE"  ||
             (anterior === "ENCERRADA" && status !== "ENCERRADA")) {
             estado.ultimaRodada = null;
             estado.vencedor = null;
@@ -175,11 +193,16 @@ const handlers = {
 
         if (status !== "EM_ANDAMENTO") estado.jaJoguei = false;
         if (anterior === "ENCERRADA" && status === "EM_ANDAMENTO") estado.jaJoguei = false;
+        if (status !== "EM_ANDAMENTO") estado.fimCronometro = null;
     },
 
     placar({ rodada, placar }) {
         estado.rodada = rodada;
         estado.placar = placar;
+    },
+
+    cronometro_iniciado({ duracao }) {
+        estado.fimCronometro = Date.now() + duracao;
     },
 
     jogada_registrada({ jogada }) {
@@ -191,6 +214,7 @@ const handlers = {
         estado.ultimaRodada = dados;
         estado.jaJoguei = false;
         estado.jogadaEscolhida = null;
+        estado.fimCronometro = null;
         registrarLog(`Rodada ${dados.rodada}: ${textoRodada(dados)}`);
         if (dados.timeout) {
             registrarLog("⏰ Tempo esgotado.");
@@ -199,6 +223,7 @@ const handlers = {
 
     fim_partida({ vencedor }) {
         estado.vencedor = vencedor;
+        estado.fimCronometro = null;
         registrarLog(textoFimPartida());
     },
 
