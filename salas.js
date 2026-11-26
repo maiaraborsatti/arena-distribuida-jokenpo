@@ -37,6 +37,8 @@ function criarSala() {
         espectadores: [],
         temporizador: null,
         temporizadorRodada: null,
+        temporizadorProximaRodada: null,
+        aceitandoJogadas: false,
         rodada: 1,
         placarRodadas: { jogador1: 0, jogador2: 0 },
         jogadas: {
